@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 
 use App\Models\notasModel;
 
+
 class notasController extends Controller
 {
     public function index(){
+        $data = ['resultado' => ""] ;
 
-        return view("notas.index");
+        return view("notas.index")->with('data', $data);
     }
 
 
@@ -27,16 +29,45 @@ public function store(Request $request){
 
     $notas->save();
 
-    return redirect("/notas");
+    $data["resultado"] = $this->calculator($media);
+
+    return redirect()->route('notas.index',$data);
 
 
 }
 
 public function show(Request $request) {
 
-    $showImc = notasModel::orderBy('id','asc')->get();
+    $showNotas = notasModel::orderBy('id','asc')->get();
 
-    return view('notas.show')->with('showImc',$showImc);
+    return view('notas.show')->with('showNotas',$showNotas);
+}
+
+public function update(Request $request, $id){
+    $updateNotas = notasModel::findOrFail($id);
+
+    $updateNotas->nome = $request->novo_nome;
+    $updateNotas->media = $request->novo_media;
+
+    $updateNotas->save();
+
+    return redirect('/notas/show');
+}
+
+public function destroy(Request $request, $id){
+
+    $deleteNotas = notasModel::findOrFail($id);
+    $deleteNotas -> delete();
+
+    return redirect('/notas/show');
+}
+
+public function calculator($nota){
+    if ($nota >= 6) {
+        return "aprovado";
+    } else {
+        return "reprovado";
+    }
 }
 
 }
